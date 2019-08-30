@@ -1,0 +1,10 @@
+plugins {
+    id 'application'
+}
+
+group = "com.gluonhq"
+version = "0.0.1-SNAPSHOT"
+application {
+    mainClassName = "$moduleName/com.gluonhq.substrate.Main"
+}
+
