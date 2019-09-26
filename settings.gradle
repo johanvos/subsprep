@@ -1,3 +1,4 @@
 rootProject.name = 'substrateMainProject'
 
 include 'com.gluonhq.substrate'
+include 'entry'

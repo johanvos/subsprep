@@ -1,0 +1,14 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    compile project(':com.gluonhq.substrate')
+}
+
+group = "com.gluonhq"
+version = "0.0.1-SNAPSHOT"
+application {
+    mainClassName = "com.gluonhq.entry.Main"
+}
+
