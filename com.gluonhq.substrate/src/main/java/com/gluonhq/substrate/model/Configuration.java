@@ -200,7 +200,7 @@ public class Configuration {
 
     /**
      * Sets the target triplet
-     * @param target
+     * @param targetTriplet the target triplet
      */
     public void setTarget(Triplet targetTriplet) {
         this.targetTriplet = targetTriplet;
