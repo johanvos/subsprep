@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -25,29 +25,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gluonhq.substrate;
+package com.gluonhq.substrate.target;
 
 import com.gluonhq.substrate.model.Configuration;
-import com.gluonhq.substrate.model.Triplet;
-import com.gluonhq.substrate.target.LinuxTargetConfiguration;
-import com.gluonhq.substrate.target.TargetConfiguration;
 
-public class SubstrateDispatcher {
+import java.nio.file.Path;
 
-    public static void nativeCompile(String a, Configuration config, String c) throws Exception {
-        System.err.println("Nativecompile invoked, a = "+a+", graal at "+config.getGraalPath());
-        Triplet targetTriplet  = config.getTargetTriplet();
-        TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
-        if (targetConfiguration == null) {
-            throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
-        }
-        targetConfiguration.compile(config);
-    }
+public abstract class AbstractTargetConfiguration implements TargetConfiguration {
 
-    private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {
-        if (Constants.OS_LINUX == targetTriplet.getOs()) {
-            return new LinuxTargetConfiguration();
-        }
-        return null;
+    static String getNativeImagePath (Configuration configuration) {
+        String graalPath = configuration.getGraalPath();
+        Path path = Path.of(graalPath, "bin", "native-image");
+        return path.toString();
     }
 }

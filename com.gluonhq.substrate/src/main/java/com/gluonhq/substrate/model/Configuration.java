@@ -31,11 +31,12 @@ import java.util.List;
 
 public class Configuration {
 
-    private String graalLibsVersion;
+//    private String graalLibsVersion;
+    private String graalPath;
     private String javaStaticSdkVersion;
     private String javafxStaticSdkVersion;
-    private String graalLibsRoot;
-    private String graalLibsUserPath;
+//    private String graalLibsRoot;
+//    private String graalLibsUserPath;
     private String llcPath;
     private String JavaFXRoot;
     private String StaticRoot;
@@ -60,17 +61,24 @@ public class Configuration {
 
     public Configuration() {}
 
-    public String getGraalLibsVersion() {
-        return graalLibsVersion;
+    public String getGraalPath() {
+        return this.graalPath;
     }
 
-    /**
-     * Sets the Graal libs version
-     * @param graalLibsVersion the Graal libs version
-     */
-    public void setGraalLibsVersion(String graalLibsVersion) {
-        this.graalLibsVersion = graalLibsVersion;
+    public void setGraalPath(String v) {
+        this.graalPath = v;
     }
+//    public String getGraalLibsVersion() {
+//        return graalLibsVersion;
+//    }
+//
+//    /**
+//     * Sets the Graal libs version
+//     * @param graalLibsVersion the Graal libs version
+//     */
+//    public void setGraalLibsVersion(String graalLibsVersion) {
+//        this.graalLibsVersion = graalLibsVersion;
+//    }
 
     public String getJavaStaticSdkVersion() {
         return javaStaticSdkVersion;
@@ -96,31 +104,31 @@ public class Configuration {
         this.javafxStaticSdkVersion = javafxStaticSdkVersion;
     }
 
-    public String getGraalLibsRoot() {
-        return graalLibsRoot;
-    }
-
-    /**
-     * Sets the omega dependencies directory
-     * @param graalLibsRoot the omega dependencies directory
-     *                      (e.g ~/.gluon/omega/graalLibs/20-ea/bundle/lib)
-     */
-    public void setGraalLibsRoot(String graalLibsRoot) {
-        this.graalLibsRoot = graalLibsRoot;
-    }
-
-    public String getGraalLibsUserPath() {
-        return graalLibsUserPath;
-    }
-
-    /**
-     * Sets the omega dependencies directory set by the user
-     * @param graalLibsUserPath the omega dependencies directory
-     *                          (e.g $user/Downloads/graalLibs/lib)
-     */
-    public void setGraalLibsUserPath(String graalLibsUserPath) {
-        this.graalLibsUserPath = graalLibsUserPath;
-    }
+//    public String getGraalLibsRoot() {
+//        return graalLibsRoot;
+//    }
+//
+//    /**
+//     * Sets the omega dependencies directory
+//     * @param graalLibsRoot the omega dependencies directory
+//     *                      (e.g ~/.gluon/omega/graalLibs/20-ea/bundle/lib)
+//     */
+//    public void setGraalLibsRoot(String graalLibsRoot) {
+//        this.graalLibsRoot = graalLibsRoot;
+//    }
+//
+//    public String getGraalLibsUserPath() {
+//        return graalLibsUserPath;
+//    }
+//
+//    /**
+//     * Sets the omega dependencies directory set by the user
+//     * @param graalLibsUserPath the omega dependencies directory
+//     *                          (e.g $user/Downloads/graalLibs/lib)
+//     */
+//    public void setGraalLibsUserPath(String graalLibsUserPath) {
+//        this.graalLibsUserPath = graalLibsUserPath;
+//    }
 
     public String getLlcPath() {
         return llcPath;

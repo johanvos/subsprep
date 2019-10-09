@@ -32,12 +32,15 @@ public class Constants {
     /**
      * Archs
      */
-    public static final String ARCH_ARM64 = "arm64";
     public static final String ARCH_AMD64 = "x86_64";
+    public static final String ARCH_ARM64 = "arm64";
 
     public static final String VENDOR_APPLE = "apple";
+    public static final String VENDOR_LINUX = "linux";
 
     public static final String OS_DARWIN = "darwin";
+    public static final String OS_IOS = "ios";
+    public static final String OS_LINUX = "linux";
 
     /**
      * Supported hosts
