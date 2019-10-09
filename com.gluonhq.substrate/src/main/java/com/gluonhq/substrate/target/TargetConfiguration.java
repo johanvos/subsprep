@@ -30,10 +30,11 @@ package com.gluonhq.substrate.target;
 import com.gluonhq.substrate.model.Configuration;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface TargetConfiguration {
 
-    void compile(Configuration config) throws Exception;
+    void compile(Configuration config, List<Path> classPath) throws Exception;
 
     void link(Path workDir, String appName, String target) throws Exception;
 

@@ -30,20 +30,29 @@ package com.gluonhq.substrate.target;
 import com.gluonhq.substrate.model.Configuration;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
     @Override
-    public void compile(Configuration config) throws Exception {
-        System.err.println("LINUX COMPILE!");
+    public void compile(Configuration config, List<Path> classDir) throws Exception {
+        String cp = File.pathSeparator + classDir.stream()
+                .map(Path::toString)
+                .filter(s -> !s.contains("javafx-"))
+                .collect(Collectors.joining(File.pathSeparator));
+        System.err.println("LINUX COMPILE!, cp = "+cp);
         String nativeImage = getNativeImagePath(config);
         ProcessBuilder compileBuilder = new ProcessBuilder(nativeImage);
-        compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.impl.InternalPlatform$LINUX_JNI_AMD64");
+        compileBuilder.command().add("-H:+ExitAfterRelocatableImageWrite");
+        compileBuilder.command().add("-H:TempDirectory=/tmp");
+        compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.Platform$LINUX_AMD64");
         compileBuilder.command().add("-cp");
-        compileBuilder.command().add("build/classes/java/main");
+        compileBuilder.command().add(cp);
         compileBuilder.command().add("hello.HelloWorld");
         compileBuilder.redirectErrorStream(true);
         Process compileProcess = compileBuilder.start();

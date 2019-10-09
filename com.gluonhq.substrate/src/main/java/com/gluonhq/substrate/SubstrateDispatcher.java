@@ -32,16 +32,26 @@ import com.gluonhq.substrate.model.Triplet;
 import com.gluonhq.substrate.target.LinuxTargetConfiguration;
 import com.gluonhq.substrate.target.TargetConfiguration;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class SubstrateDispatcher {
 
-    public static void nativeCompile(String a, Configuration config, String c) throws Exception {
-        System.err.println("Nativecompile invoked, a = "+a+", graal at "+config.getGraalPath());
+    public static void nativeCompile(String a, Configuration config, String cp) throws Exception {
+        List<Path> classPath = Stream.of(cp.split(File.pathSeparator))
+                .map(Paths::get)
+                .collect(Collectors.toList());
+        System.err.println("Nativecompile invoked, a = "+a+", graal at "+config.getGraalPath()+", classpath = "+classPath);
         Triplet targetTriplet  = config.getTargetTriplet();
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         if (targetConfiguration == null) {
             throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
         }
-        targetConfiguration.compile(config);
+        targetConfiguration.compile(config, classPath);
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {
