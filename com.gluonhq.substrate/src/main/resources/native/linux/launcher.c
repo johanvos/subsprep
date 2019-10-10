@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -25,64 +25,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gluonhq.substrate.model;
+#include <stdio.h>
 
-import com.gluonhq.substrate.Constants;
+extern void *IsolateEnterStub__JavaMainWrapper__run__5087f5482cc9a6abc971913ece43acb471d2631b__a61fe6c26e84dd4037e4629852b5488bfcc16e7e();
 
-import static com.gluonhq.substrate.Constants.*;
-
-public class Triplet {
-
-    private String arch;
-    private String vendor;
-    private String os;
-
-    public Triplet(String arch, String vendor, String os) {
-        this.arch = arch;
-        this.vendor = vendor;
-        this.os = os;
-    }
-
-    public Triplet(Constants.Profile profile) {
-        if (profile == Constants.Profile.LINUX) {
-            this.arch = ARCH_AMD64;
-            this.vendor = VENDOR_LINUX;
-            this.os = OS_LINUX;
-        } else {
-            throw new IllegalArgumentException("Triplet for profile "+profile+" is not supported yet");
-        }
-    }
-
-    public String getArch() {
-        return arch;
-    }
-
-    public void setArch(String arch) {
-        this.arch = arch;
-    }
-
-    public String getVendor() {
-        return vendor;
-    }
-
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
-    }
-
-    public String getOs() {
-        return os;
-    }
-
-    public void setOs(String os) {
-        this.os = os;
-    }
-
-    public String getArchOs() {
-        return this.arch+"-"+this.os;
-    }
-
-    @Override
-    public String toString() {
-        return arch + '-' + vendor + '-' + os;
-    }
+int main() {
+    #ifdef GVM_VERBOSE
+      fprintf(stderr, "Main\n");
+    #endif
+    (*IsolateEnterStub__JavaMainWrapper__run__5087f5482cc9a6abc971913ece43acb471d2631b__a61fe6c26e84dd4037e4629852b5488bfcc16e7e)(1);
 }

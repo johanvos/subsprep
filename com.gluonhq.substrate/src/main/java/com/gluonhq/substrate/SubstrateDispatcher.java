@@ -27,6 +27,7 @@
  */
 package com.gluonhq.substrate;
 
+import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.model.Triplet;
 import com.gluonhq.substrate.target.LinuxTargetConfiguration;
@@ -63,8 +64,10 @@ public class SubstrateDispatcher {
         config.setMainClassName(mainClass);
         Triplet targetTriplet = new Triplet(Constants.Profile.LINUX);
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
-        prepareDirs(null);
-        boolean compile = targetConfiguration.compile(gvmPath, config, classPath);
+       // prepareDirs(null);
+        ProcessPaths paths = new ProcessPaths(null, targetTriplet.getArchOs());
+
+        boolean compile = targetConfiguration.compile(paths, config, classPath);
         System.err.println("Result of compile = "+compile);
     }
 
@@ -78,14 +81,27 @@ public class SubstrateDispatcher {
         if (targetConfiguration == null) {
             throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
         }
-        prepareDirs(buildRoot);
+       // prepareDirs(buildRoot);
+        ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
+
         System.err.println("We will now compile your code for "+targetTriplet.toString()+". This may take some time.");
-        boolean compile = targetConfiguration.compile(gvmPath, config, classPath);
+        boolean compile = targetConfiguration.compile(paths, config, classPath);
         if (compile) {
             System.err.println("Compilation succeeded.");
         } else {
             System.err.println("Compilation failed. The error should be printed above.");
         }
+    }
+    public static void nativeLink(String buildRoot, ProjectConfiguration config) throws IOException, InterruptedException {
+        Triplet targetTriplet  = config.getTargetTriplet();
+        TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
+        if (targetConfiguration == null) {
+            throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
+        }
+        ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
+
+        prepareDirs(buildRoot);
+        targetConfiguration.link(paths, config);
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {

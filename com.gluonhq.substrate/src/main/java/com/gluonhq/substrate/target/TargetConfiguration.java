@@ -27,23 +27,25 @@
  */
 package com.gluonhq.substrate.target;
 
+import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public interface TargetConfiguration {
 
     /**
      * Compiles the classes to objectcode for this TargetConfiguration.
-     * @param gvmPath
+     * @param paths
      * @param config
      * @param classPath
      * @return true if compilation succeeded, false if it failed
      * @throws Exception
      */
-    boolean compile(Path gvmPath, ProjectConfiguration config, String classPath) throws Exception;
+    boolean compile(ProcessPaths paths, ProjectConfiguration config, String classPath) throws Exception;
 
-    void link(Path workDir, String appName, String target) throws Exception;
+    void link(ProcessPaths paths, ProjectConfiguration config) throws IOException, InterruptedException;
 
     void run(Path workDir, String appName, String target) throws Exception;
 }

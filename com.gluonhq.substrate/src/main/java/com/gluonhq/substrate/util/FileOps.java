@@ -27,8 +27,11 @@
  */
 package com.gluonhq.substrate.util;
 
+import com.gluonhq.substrate.SubstrateDispatcher;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -39,7 +42,10 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileOps {
 
@@ -87,5 +93,36 @@ public class FileOps {
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
+    }
+
+    public static Path copyResource(String resource, Path destination) throws IOException {
+        InputStream is = resourceAsStream(resource);
+        if (is == null) {
+            throw new IOException("Could not copy resource named "+resource+" as it doesn't exist");
+        }
+        return copyStream(resourceAsStream(resource), destination);
+    }
+
+    public static Path copyStream(InputStream sourceStream, Path destination) throws IOException {
+        Path parent = destination.getParent();
+        if (!parent.toFile().exists()) {
+            Files.createDirectories(parent);
+        }
+        if (!parent.toFile().isDirectory()) {
+            throw new IllegalArgumentException("Could not copy " + destination + " because its parent already exists as a file!");
+        } else {
+            File f = destination.toFile();
+            if (f.exists()) {
+                f.delete();
+            }
+            Files.copy(sourceStream, destination, REPLACE_EXISTING);
+        }
+        return destination;
+    }
+
+    public static InputStream resourceAsStream(String res) {
+        String actualResource = Objects.requireNonNull(res).startsWith(File.separator) ? res : File.separator + res;
+        InputStream answer = SubstrateDispatcher.class.getResourceAsStream(actualResource);
+        return answer;
     }
 }

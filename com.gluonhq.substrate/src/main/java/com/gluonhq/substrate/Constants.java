@@ -107,6 +107,7 @@ public class Constants {
 
     /**
      * Paths
+     */
     public static final String CLIENT_PATH = "client";
     public static final String GVM_PATH = "gvm";
     public static final String GEN_PATH = "gensrc";
@@ -114,7 +115,7 @@ public class Constants {
     public static final String TMP_PATH = "tmp";
     public static final String LIB_PATH = "lib";
     public static final String LOG_PATH = "log";
-*/
+
 
 
     /**

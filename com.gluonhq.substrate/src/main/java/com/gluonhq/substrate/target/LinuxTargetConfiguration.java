@@ -27,6 +27,7 @@
  */
 package com.gluonhq.substrate.target;
 
+import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.util.FileOps;
 
@@ -43,9 +44,13 @@ import java.util.Comparator;
 public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
     @Override
-    public boolean compile(Path gvmPath, ProjectConfiguration config, String cp) throws IOException, InterruptedException {
-        FileOps.rmdir(gvmPath.resolve("tmp"));
-        String tmpDir = gvmPath.resolve("tmp").toFile().getAbsolutePath();
+    public boolean compile(ProcessPaths paths, ProjectConfiguration config, String cp) throws IOException, InterruptedException {
+        if (!compileAdditionalSources(paths, config) ) {
+            return false;
+        }
+        Path gvmPath = paths.getGvmPath();
+        FileOps.rmdir(paths.getTmpPath());
+        String tmpDir = paths.getTmpPath().toFile().getAbsolutePath();
         String mainClassName = config.getMainClassName();
         if (mainClassName == null || mainClassName.isEmpty()) {
             throw new IllegalArgumentException("No main class is supplied. Cannot compile.");
@@ -67,7 +72,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         int result = compileProcess.waitFor();
         // we will print the output of the process only if we don't have the resulting objectfile
 
-        boolean failure = result!=0;
+        boolean failure = result != 0;
         String extraMessage = null;
         if (!failure) {
             String nameSearch = mainClassName.toLowerCase()+".o";
@@ -79,13 +84,8 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         }
         if (failure) {
             System.err.println("Compilation failed with result = " + result);
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String l = br.readLine();
-            while (l != null) {
-                System.err.println(l);
-                l = br.readLine();
-            }
-            System.err.println("That was the error.");
+            printFromInputStream(inputStream);
+
             if (extraMessage!= null) {
                 System.err.println("Additional information: "+extraMessage);
             }
@@ -93,14 +93,73 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         return !failure;
     }
 
+    public boolean compileAdditionalSources(ProcessPaths paths, ProjectConfiguration projectConfiguration)
+            throws IOException, InterruptedException {
+        String appName = projectConfiguration.getAppName();
+        Path workDir = paths.getGvmPath().resolve(appName);
+        Files.createDirectories(workDir);
+        FileOps.copyResource("/native/linux/launcher.c", workDir.resolve("launcher.c"));
+        FileOps.copyResource("/native/linux/thread.c", workDir.resolve("thread.c"));
+        ProcessBuilder processBuilder = new ProcessBuilder("gcc");
+        processBuilder.command().add("-c");
+        if (projectConfiguration.isVerbose()) {
+            processBuilder.command().add("-DGVM_VERBOSE");
+        }
+        processBuilder.command().add("launcher.c");
+        processBuilder.command().add("thread.c");
+        processBuilder.directory(workDir.toFile());
+        String cmds = String.join(" ", processBuilder.command());
+        processBuilder.redirectErrorStream(true);
+        Process p = processBuilder.start();
+        InputStream inputStream = p.getInputStream();
+        int result = p.waitFor();
+        if (result != 0) {
+            System.err.println("Compilation of additional sources failed with result = " + result);
+            printFromInputStream(inputStream);
+            return false;
+        } // we need more checks (e.g. do launcher.o and thread.o exist?)
+        return true;
+    }
+
     @Override
-    public void link(Path workDir, String appName, String target) throws Exception {
-        System.err.println("LINUX LINK");
+    public void link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+        String appName = projectConfiguration.getAppName();
+        String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
+        Path gvmPath = paths.getGvmPath();
+        Path objectFile = FileOps.findFile(gvmPath, objectFilename);
+        if (objectFile == null) {
+            throw new IllegalArgumentException("Linking failed, since there is no objectfile named "+objectFilename+" under "
+                    +gvmPath.toString());
+        }
+        ProcessBuilder linkBuilder = new ProcessBuilder("gcc");
+        Path linux = gvmPath.resolve(appName);
+
+        linkBuilder.command().add("-o");
+        linkBuilder.command().add(paths.getAppPath().toString() + "/" + appName);
+        linkBuilder.command().add(linux.toString() + "/launcher.o");
+        linkBuilder.command().add(linux.toString() + "/thread.o");
+        linkBuilder.command().add(objectFile.toString());
+        linkBuilder.redirectErrorStream(true);
+        Process compileProcess = linkBuilder.start();
+        InputStream inputStream = compileProcess.getInputStream();
+        int result = compileProcess.waitFor();
+        System.err.println("RESULT OF LINKING = "+result);
+        System.err.println("INPUTPROCESSING:");
+        printFromInputStream(inputStream);
     }
 
     @Override
     public void run(Path workDir, String appName, String target) throws Exception {
         System.err.println("LINUX RUN");
+    }
+
+    private void printFromInputStream(InputStream inputStream) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        String l = br.readLine();
+        while (l != null) {
+            System.err.println(l);
+            l = br.readLine();
+        }
     }
 
 }
