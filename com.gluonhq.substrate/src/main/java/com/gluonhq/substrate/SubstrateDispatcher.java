@@ -27,31 +27,65 @@
  */
 package com.gluonhq.substrate;
 
-import com.gluonhq.substrate.model.Configuration;
+import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.model.Triplet;
 import com.gluonhq.substrate.target.LinuxTargetConfiguration;
 import com.gluonhq.substrate.target.TargetConfiguration;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SubstrateDispatcher {
 
-    public static void nativeCompile(String a, Configuration config, String cp) throws Exception {
-        List<Path> classPath = Stream.of(cp.split(File.pathSeparator))
-                .map(Paths::get)
-                .collect(Collectors.toList());
-        System.err.println("Nativecompile invoked, a = "+a+", graal at "+config.getGraalPath()+", classpath = "+classPath);
+    private static Path omegaPath;
+    private static Path gvmPath;
+
+    public static void main(String[] args) throws Exception {
+        String classPath = System.getProperty("imagecp");
+        String graalVM = System.getProperty("graalvm");
+        String mainClass = System.getProperty("mainclass");
+        if (classPath == null || classPath.isEmpty()) {
+            printUsage();
+            throw new IllegalArgumentException("No classpath specified. Use -Dimagecp=/path/to/classes");
+        }
+        if (graalVM == null || graalVM.isEmpty()) {
+            printUsage();
+            throw new IllegalArgumentException("No graalvm specified. Use -Dgraalvm=/path/to/graalvm");
+        }
+        if (mainClass == null || mainClass.isEmpty()) {
+            printUsage();
+            throw new IllegalArgumentException("No mainclass specified. Use -Dmainclass=main.class.name");
+        }
+        ProjectConfiguration config = new ProjectConfiguration();
+        config.setGraalPath(graalVM);
+        config.setMainClassName(mainClass);
+        Triplet targetTriplet = new Triplet(Constants.Profile.LINUX);
+        TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
+        prepareDirs(null);
+        boolean compile = targetConfiguration.compile(gvmPath, config, classPath);
+        System.err.println("Result of compile = "+compile);
+    }
+
+    static void printUsage() {
+        System.err.println("Usage:\n java -Dimagecp=... -Dgraalvm=... -Dmainclass=... com.gluonhq.substrate.SubstrateDispatcher");
+    }
+
+    public static void nativeCompile(String buildRoot, ProjectConfiguration config, String classPath) throws Exception {
         Triplet targetTriplet  = config.getTargetTriplet();
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         if (targetConfiguration == null) {
             throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
         }
-        targetConfiguration.compile(config, classPath);
+        prepareDirs(buildRoot);
+        System.err.println("We will now compile your code for "+targetTriplet.toString()+". This may take some time.");
+        boolean compile = targetConfiguration.compile(gvmPath, config, classPath);
+        if (compile) {
+            System.err.println("Compilation succeeded.");
+        } else {
+            System.err.println("Compilation failed. The error should be printed above.");
+        }
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {
@@ -60,4 +94,18 @@ public class SubstrateDispatcher {
         }
         return null;
     }
+
+    private static String prepareDirs(String buildRoot) throws IOException {
+        String gvmDir = null;
+        omegaPath = buildRoot != null && !buildRoot.isEmpty() ?
+                Paths.get(buildRoot) : Paths.get(System.getProperty("user.dir")).resolve("build").resolve("client");
+        String rootDir = omegaPath.toAbsolutePath().toString();
+
+        gvmPath = Paths.get(rootDir, "gvm");
+        gvmPath = Files.createDirectories(gvmPath);
+        gvmDir = gvmPath.toAbsolutePath().toString();
+
+        return gvmDir;
+    }
+
 }

@@ -29,7 +29,10 @@ package com.gluonhq.substrate.model;
 
 import java.util.List;
 
-public class Configuration {
+/**
+ * This class contains all configuration info about the current project (not about the current OS/Arch/vendor etc)
+ */
+public class ProjectConfiguration {
 
 //    private String graalLibsVersion;
     private String graalPath;
@@ -59,7 +62,7 @@ public class Configuration {
     private String appName;
     private String mainClassName;
 
-    public Configuration() {}
+    public ProjectConfiguration() {}
 
     public String getGraalPath() {
         return this.graalPath;

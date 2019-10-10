@@ -30,17 +30,32 @@ package com.gluonhq.substrate;
 public class Constants {
 
     /**
-     * Archs
+     * Triplet architecture
      */
     public static final String ARCH_AMD64 = "x86_64";
     public static final String ARCH_ARM64 = "arm64";
 
+    /**
+     * Triplet vendor
+     */
     public static final String VENDOR_APPLE = "apple";
     public static final String VENDOR_LINUX = "linux";
 
+    /**
+     * Triplet OS
+     */
     public static final String OS_DARWIN = "darwin";
     public static final String OS_IOS = "ios";
     public static final String OS_LINUX = "linux";
+
+    /**
+     * Predefined Profiles
+     */
+    public enum Profile {
+        LINUX; // (x86_64-linux-linux)
+    };
+
+    public static final String PROFILE_LINUX = "linux";
 
     /**
      * Supported hosts

@@ -27,13 +27,13 @@
  */
 package com.gluonhq.substrate.target;
 
-import com.gluonhq.substrate.model.Configuration;
+import com.gluonhq.substrate.model.ProjectConfiguration;
 
 import java.nio.file.Path;
 
 public abstract class AbstractTargetConfiguration implements TargetConfiguration {
 
-    static String getNativeImagePath (Configuration configuration) {
+    static String getNativeImagePath (ProjectConfiguration configuration) {
         String graalPath = configuration.getGraalPath();
         Path path = Path.of(graalPath, "bin", "native-image");
         return path.toString();

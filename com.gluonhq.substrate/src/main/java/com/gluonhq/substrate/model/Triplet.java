@@ -27,16 +27,37 @@
  */
 package com.gluonhq.substrate.model;
 
+import com.gluonhq.substrate.Constants;
+
+import static com.gluonhq.substrate.Constants.*;
+
 public class Triplet {
 
     private String arch;
     private String vendor;
     private String os;
 
+//    private Triplet() {}
+
     public Triplet(String arch, String vendor, String os) {
         this.arch = arch;
         this.vendor = vendor;
         this.os = os;
+    }
+//
+//    private static Triplet create (String arch, String vendor, String os) {
+//        Triplet triplet = new Triplet();
+//        return triplet;
+//    }
+
+    public Triplet(Constants.Profile profile) {
+        if (profile == Constants.Profile.LINUX) {
+            this.arch = ARCH_AMD64;
+            this.vendor = VENDOR_LINUX;
+            this.os = OS_LINUX;
+        } else {
+            throw new IllegalArgumentException("Triplet for profile "+profile+" is not supported yet");
+        }
     }
 
     public String getArch() {

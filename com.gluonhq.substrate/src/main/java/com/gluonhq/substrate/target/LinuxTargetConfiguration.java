@@ -27,46 +27,70 @@
  */
 package com.gluonhq.substrate.target;
 
-import com.gluonhq.substrate.model.Configuration;
+import com.gluonhq.substrate.model.ProjectConfiguration;
+import com.gluonhq.substrate.util.FileOps;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Comparator;
 
 public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
     @Override
-    public void compile(Configuration config, List<Path> classDir) throws Exception {
-        String cp = File.pathSeparator + classDir.stream()
-                .map(Path::toString)
-                .filter(s -> !s.contains("javafx-"))
-                .collect(Collectors.joining(File.pathSeparator));
-        System.err.println("LINUX COMPILE!, cp = "+cp);
+    public boolean compile(Path gvmPath, ProjectConfiguration config, String cp) throws IOException, InterruptedException {
+        FileOps.rmdir(gvmPath.resolve("tmp"));
+        String tmpDir = gvmPath.resolve("tmp").toFile().getAbsolutePath();
+        String mainClassName = config.getMainClassName();
+        if (mainClassName == null || mainClassName.isEmpty()) {
+            throw new IllegalArgumentException("No main class is supplied. Cannot compile.");
+        }
+        if (cp == null || cp.isEmpty()) {
+            throw new IllegalArgumentException("No classpath specified. Cannot compile");
+        }
         String nativeImage = getNativeImagePath(config);
         ProcessBuilder compileBuilder = new ProcessBuilder(nativeImage);
         compileBuilder.command().add("-H:+ExitAfterRelocatableImageWrite");
-        compileBuilder.command().add("-H:TempDirectory=/tmp");
+        compileBuilder.command().add("-H:TempDirectory="+tmpDir);
         compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.Platform$LINUX_AMD64");
         compileBuilder.command().add("-cp");
         compileBuilder.command().add(cp);
-        compileBuilder.command().add("hello.HelloWorld");
+        compileBuilder.command().add(mainClassName);
         compileBuilder.redirectErrorStream(true);
         Process compileProcess = compileBuilder.start();
         InputStream inputStream = compileProcess.getInputStream();
         int result = compileProcess.waitFor();
-        System.err.println("result of compilation = "+result);
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        System.err.println("Will now read input");
-        String l = br.readLine();
-        while (l != null) {
-            System.err.println("Reading "+l);
-            l = br.readLine();
+        // we will print the output of the process only if we don't have the resulting objectfile
+
+        boolean failure = result!=0;
+        String extraMessage = null;
+        if (!failure) {
+            String nameSearch = mainClassName.toLowerCase()+".o";
+            Path p = FileOps.findFile(gvmPath, nameSearch);
+            if (p == null) {
+                failure = true;
+                extraMessage = "Objectfile should be called "+nameSearch+" but we didn't find that under "+gvmPath.toString();
+            }
         }
-        System.err.println("Done reading");
+        if (failure) {
+            System.err.println("Compilation failed with result = " + result);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String l = br.readLine();
+            while (l != null) {
+                System.err.println(l);
+                l = br.readLine();
+            }
+            System.err.println("That was the error.");
+            if (extraMessage!= null) {
+                System.err.println("Additional information: "+extraMessage);
+            }
+        }
+        return !failure;
     }
 
     @Override
@@ -78,4 +102,5 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
     public void run(Path workDir, String appName, String target) throws Exception {
         System.err.println("LINUX RUN");
     }
+
 }
