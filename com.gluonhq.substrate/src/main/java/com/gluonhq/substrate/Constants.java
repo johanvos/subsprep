@@ -27,7 +27,12 @@
  */
 package com.gluonhq.substrate;
 
+import java.nio.file.Path;
+
 public class Constants {
+
+    public static final Path USER_SUBSTRATE_PATH = Path.of(System.getProperty("user.home"))
+            .resolve(".gluon").resolve("substrate");
 
     /**
      * Triplet architecture

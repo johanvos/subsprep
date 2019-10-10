@@ -32,6 +32,8 @@ import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.model.Triplet;
 import com.gluonhq.substrate.target.LinuxTargetConfiguration;
 import com.gluonhq.substrate.target.TargetConfiguration;
+import com.gluonhq.substrate.util.FileDeps;
+import com.gluonhq.substrate.util.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,7 +85,8 @@ public class SubstrateDispatcher {
         }
        // prepareDirs(buildRoot);
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
-
+        Logger.logInit(paths.getLogPath().toString(), "==================== COMPILE TASK ====================",
+                config.isVerbose());
         System.err.println("We will now compile your code for "+targetTriplet.toString()+". This may take some time.");
         boolean compile = targetConfiguration.compile(paths, config, classPath);
         if (compile) {
@@ -99,8 +102,8 @@ public class SubstrateDispatcher {
             throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
         }
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
-
-        prepareDirs(buildRoot);
+        FileDeps.setupDependencies(config);
+      //  prepareDirs(buildRoot);
         targetConfiguration.link(paths, config);
     }
 
