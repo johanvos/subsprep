@@ -87,7 +87,7 @@ public class DarwinTargetConfiguration extends AbstractTargetConfiguration {
         linkBuilder.command().add(linux.toString() + "/thread.o");
         linkBuilder.command().add(objectFile.toString());
         linkBuilder.command().add("-L" + projectConfiguration.getJavaStaticLibsPath());
-        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/linux-amd64");
+        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/darwin-amd64");
         linkBuilder.command().add("-ljava");
         linkBuilder.command().add("-ljvm");
         linkBuilder.command().add("-llibchelper");
@@ -97,6 +97,7 @@ public class DarwinTargetConfiguration extends AbstractTargetConfiguration {
         linkBuilder.command().add("-lpthread");
         linkBuilder.command().add("-lz");
         linkBuilder.command().add("-ldl");
+        linkBuilder.command().add("-Wl,-framework,Foundation");
         linkBuilder.redirectErrorStream(true);
         Process compileProcess = linkBuilder.start();
         InputStream inputStream = compileProcess.getInputStream();
