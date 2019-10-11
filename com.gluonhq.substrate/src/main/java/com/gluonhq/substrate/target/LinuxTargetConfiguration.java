@@ -31,65 +31,63 @@ import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.util.FileOps;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
-
-    @Override
-    public boolean compile(ProcessPaths paths, ProjectConfiguration config, String cp) throws IOException, InterruptedException {
-        if (!compileAdditionalSources(paths, config) ) {
-            return false;
-        }
-        Path gvmPath = paths.getGvmPath();
-        FileOps.rmdir(paths.getTmpPath());
-        String tmpDir = paths.getTmpPath().toFile().getAbsolutePath();
-        String mainClassName = config.getMainClassName();
-        if (mainClassName == null || mainClassName.isEmpty()) {
-            throw new IllegalArgumentException("No main class is supplied. Cannot compile.");
-        }
-        if (cp == null || cp.isEmpty()) {
-            throw new IllegalArgumentException("No classpath specified. Cannot compile");
-        }
-        String nativeImage = getNativeImagePath(config);
-        ProcessBuilder compileBuilder = new ProcessBuilder(nativeImage);
-        compileBuilder.command().add("-H:+ExitAfterRelocatableImageWrite");
-        compileBuilder.command().add("-H:TempDirectory="+tmpDir);
-        compileBuilder.command().add("-H:+SharedLibrary");
-        compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.Platform$LINUX_AMD64");
-        compileBuilder.command().add("-cp");
-        compileBuilder.command().add(cp);
-        compileBuilder.command().add(mainClassName);
-        compileBuilder.redirectErrorStream(true);
-        Process compileProcess = compileBuilder.start();
-        InputStream inputStream = compileProcess.getInputStream();
-        int result = compileProcess.waitFor();
-        // we will print the output of the process only if we don't have the resulting objectfile
-
-        boolean failure = result != 0;
-        String extraMessage = null;
-        if (!failure) {
-            String nameSearch = mainClassName.toLowerCase()+".o";
-            Path p = FileOps.findFile(gvmPath, nameSearch);
-            if (p == null) {
-                failure = true;
-                extraMessage = "Objectfile should be called "+nameSearch+" but we didn't find that under "+gvmPath.toString();
-            }
-        }
-        if (failure) {
-            System.err.println("Compilation failed with result = " + result);
-            printFromInputStream(inputStream);
-
-            if (extraMessage!= null) {
-                System.err.println("Additional information: "+extraMessage);
-            }
-        }
-        return !failure;
-    }
+//
+//    @Override
+//    public boolean compile(ProcessPaths paths, ProjectConfiguration config, String cp) throws IOException, InterruptedException {
+//        if (!compileAdditionalSources(paths, config) ) {
+//            return false;
+//        }
+//        Path gvmPath = paths.getGvmPath();
+//        FileOps.rmdir(paths.getTmpPath());
+//        String tmpDir = paths.getTmpPath().toFile().getAbsolutePath();
+//        String mainClassName = config.getMainClassName();
+//        if (mainClassName == null || mainClassName.isEmpty()) {
+//            throw new IllegalArgumentException("No main class is supplied. Cannot compile.");
+//        }
+//        if (cp == null || cp.isEmpty()) {
+//            throw new IllegalArgumentException("No classpath specified. Cannot compile");
+//        }
+//        String nativeImage = getNativeImagePath(config);
+//        ProcessBuilder compileBuilder = new ProcessBuilder(nativeImage);
+//        compileBuilder.command().add("-H:+ExitAfterRelocatableImageWrite");
+//        compileBuilder.command().add("-H:TempDirectory="+tmpDir);
+//        compileBuilder.command().add("-H:+SharedLibrary");
+//        compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.Platform$LINUX_AMD64");
+//        compileBuilder.command().add("-cp");
+//        compileBuilder.command().add(cp);
+//        compileBuilder.command().add(mainClassName);
+//        compileBuilder.redirectErrorStream(true);
+//        Process compileProcess = compileBuilder.start();
+//        InputStream inputStream = compileProcess.getInputStream();
+//        int result = compileProcess.waitFor();
+//        // we will print the output of the process only if we don't have the resulting objectfile
+//
+//        boolean failure = result != 0;
+//        String extraMessage = null;
+//        if (!failure) {
+//            String nameSearch = mainClassName.toLowerCase()+".o";
+//            Path p = FileOps.findFile(gvmPath, nameSearch);
+//            if (p == null) {
+//                failure = true;
+//                extraMessage = "Objectfile should be called "+nameSearch+" but we didn't find that under "+gvmPath.toString();
+//            }
+//        }
+//        if (failure) {
+//            System.err.println("Compilation failed with result = " + result);
+//            printFromInputStream(inputStream);
+//
+//            if (extraMessage!= null) {
+//                System.err.println("Additional information: "+extraMessage);
+//            }
+//        }
+//        return !failure;
+//    }
 
     public boolean compileAdditionalSources(ProcessPaths paths, ProjectConfiguration projectConfiguration)
             throws IOException, InterruptedException {
@@ -185,25 +183,5 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         return true;
     }
 
-    private void asynPrintFromInputStream (InputStream inputStream) throws IOException {
-        Thread t = new Thread() {
-            @Override public void run() {
-                try {
-                    printFromInputStream(inputStream);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        t.start();
-    }
-    private void printFromInputStream(InputStream inputStream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        String l = br.readLine();
-        while (l != null) {
-            System.err.println(l);
-            l = br.readLine();
-        }
-    }
 
 }
