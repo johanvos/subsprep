@@ -48,8 +48,8 @@ public class ProcessPaths {
 
     /**
      * |-- build or target
-     *     |-- client                   <-- buildRoot
-     *         |-- $app                 <-- $OS-$ARCH
+     *     |-- client                   <!-- buildRoot  -->
+     *         |-- $app                 <!-- $OS-$ARCH  -->
      *             |-- gvm
      *                 |-- tmp
      *                 |-- lib
