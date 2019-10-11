@@ -97,6 +97,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
     public boolean compileAdditionalSources(ProcessPaths paths, ProjectConfiguration projectConfiguration)
             throws IOException, InterruptedException {
         String appName = projectConfiguration.getAppName();
+        System.err.println("paths = "+paths+" and gvmp = "+paths.getGvmPath()+" and name = "+appName);
         Path workDir = paths.getGvmPath().resolve(appName);
         Files.createDirectories(workDir);
         FileOps.copyResource("/native/linux/launcher.c", workDir.resolve("launcher.c"));
@@ -162,7 +163,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
 
     @Override
-    public void run(Path appPath, String appName, String notarget) throws IOException, InterruptedException {
+    public void run(Path appPath, String appName) throws IOException, InterruptedException {
         ProcessBuilder runBuilder = new ProcessBuilder(appPath.toString() + "/" + appName);
         runBuilder.redirectErrorStream(true);
         Process runProcess = runBuilder.start();

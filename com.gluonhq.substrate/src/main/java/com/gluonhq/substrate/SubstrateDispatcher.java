@@ -49,6 +49,7 @@ public class SubstrateDispatcher {
         String classPath = System.getProperty("imagecp");
         String graalVM = System.getProperty("graalvm");
         String mainClass = System.getProperty("mainclass");
+        String appName = System.getProperty("appname");
         if (classPath == null || classPath.isEmpty()) {
             printUsage();
             throw new IllegalArgumentException("No classpath specified. Use -Dimagecp=/path/to/classes");
@@ -61,15 +62,27 @@ public class SubstrateDispatcher {
             printUsage();
             throw new IllegalArgumentException("No mainclass specified. Use -Dmainclass=main.class.name");
         }
+        if (appName == null) {
+            appName = "anonymousApp";
+        }
         ProjectConfiguration config = new ProjectConfiguration();
         config.setGraalPath(graalVM);
         config.setMainClassName(mainClass);
+        config.setAppName(appName);
+        config.setJavaStaticSdkVersion(Constants.DEFAULT_JAVA_STATIC_SDK_VERSION);
         Triplet targetTriplet = new Triplet(Constants.Profile.LINUX);
+        config.setTarget(targetTriplet);
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
-       // prepareDirs(null);
-        ProcessPaths paths = new ProcessPaths(null, targetTriplet.getArchOs());
+        Path buildRoot = Paths.get(System.getProperty("user.dir"), "build", "autoclient");
+        ProcessPaths paths = new ProcessPaths(buildRoot.toString(), targetTriplet.getArchOs());
 
         boolean compile = targetConfiguration.compile(paths, config, classPath);
+        if (!compile) {
+            System.err.println("COMPILE FAILED");
+            return;
+        }
+        targetConfiguration.link(paths, config);
+        targetConfiguration.run(paths.getAppPath(), appName);
         System.err.println("Result of compile = "+compile);
     }
 
@@ -109,7 +122,7 @@ public class SubstrateDispatcher {
         Triplet targetTriplet  = config.getTargetTriplet();
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
-        targetConfiguration.run(paths.getAppPath(), config.getAppName(), null);
+        targetConfiguration.run(paths.getAppPath(), config.getAppName());
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {

@@ -79,35 +79,37 @@ public class Constants {
     public static final String TARGET_IOS = "ios";
     public static final String TARGET_IOS_SIM = "ios-sim";
 
-    /**
-     * Supported target app folders
-     *
-     */
-    public static final String APP_MAC = "mac";
-    public static final String APP_LINUX = "linux";
-    public static final String APP_IOS = "ios";
+    public static final String DEFAULT_JAVA_STATIC_SDK_VERSION  = "11-ea+7";
 
-    /**
-     * Supported target source folders
-     *
-     */
-    public static final String SOURCE_MAC = "mac";
-    public static final String SOURCE_IOS = "ios";
+//    /**
+//     * Supported target app folders
+//     *
+//     */
+//    public static final String APP_MAC = "mac";
+//    public static final String APP_LINUX = "linux";
+//    public static final String APP_IOS = "ios";
+//
+//    /**
+//     * Supported target source folders
+//     *
+//     */
+//    public static final String SOURCE_MAC = "mac";
+//    public static final String SOURCE_IOS = "ios";
 
-    /**
-     * String used to download dependencies for supported hosts
-     *
-     */
-    public static final String DEPS_HOST_MAC = "darwin";
-    public static final String DEPS_HOST_LINUX = "linux";
-
-    /**
-     * String used to download dependencies for supported targets
-     *
-     */
-    public static final String DEPS_TARGET_MAC = "macosx";
-    public static final String DEPS_TARGET_LINUX = "linux";
-    public static final String DEPS_TARGET_IOS = "ios";
+//    /**
+//     * String used to download dependencies for supported hosts
+//     *
+//     */
+//    public static final String DEPS_HOST_MAC = "darwin";
+//    public static final String DEPS_HOST_LINUX = "linux";
+//
+//    /**
+//     * String used to download dependencies for supported targets
+//     *
+//     */
+//    public static final String DEPS_TARGET_MAC = "macosx";
+//    public static final String DEPS_TARGET_LINUX = "linux";
+//    public static final String DEPS_TARGET_IOS = "ios";
 
 
     /**
