@@ -30,6 +30,7 @@ package com.gluonhq.substrate;
 import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.model.Triplet;
+import com.gluonhq.substrate.target.DarwinTargetConfiguration;
 import com.gluonhq.substrate.target.LinuxTargetConfiguration;
 import com.gluonhq.substrate.target.TargetConfiguration;
 import com.gluonhq.substrate.util.FileDeps;
@@ -137,6 +138,10 @@ public class SubstrateDispatcher {
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {
         if (Constants.OS_LINUX == targetTriplet.getOs()) {
             return new LinuxTargetConfiguration();
+        }
+        if (Constants.OS_DARWIN == targetTriplet.getOs()) {
+            return new DarwinTargetConfiguration();
+
         }
         return null;
     }
