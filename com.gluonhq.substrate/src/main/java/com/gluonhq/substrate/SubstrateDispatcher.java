@@ -83,7 +83,6 @@ public class SubstrateDispatcher {
         if (targetConfiguration == null) {
             throw new IllegalArgumentException("We don't have a configuration to compile "+targetTriplet);
         }
-       // prepareDirs(buildRoot);
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
         Logger.logInit(paths.getLogPath().toString(), "==================== COMPILE TASK ====================",
                 config.isVerbose());
@@ -103,8 +102,14 @@ public class SubstrateDispatcher {
         }
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
         FileDeps.setupDependencies(config);
-      //  prepareDirs(buildRoot);
         targetConfiguration.link(paths, config);
+    }
+
+    public static void nativeRun(String buildRoot, ProjectConfiguration config) throws IOException, InterruptedException {
+        Triplet targetTriplet  = config.getTargetTriplet();
+        TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
+        ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
+        targetConfiguration.run(paths.getAppPath(), config.getAppName(), null);
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {

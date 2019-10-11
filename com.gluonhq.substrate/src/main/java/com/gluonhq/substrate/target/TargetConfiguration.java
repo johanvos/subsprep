@@ -47,5 +47,5 @@ public interface TargetConfiguration {
 
     void link(ProcessPaths paths, ProjectConfiguration config) throws IOException, InterruptedException;
 
-    void run(Path workDir, String appName, String target) throws Exception;
+    void run(Path workDir, String appName, String target) throws IOException, InterruptedException;
 }

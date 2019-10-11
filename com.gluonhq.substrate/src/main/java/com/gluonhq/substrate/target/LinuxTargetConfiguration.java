@@ -160,11 +160,29 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         printFromInputStream(inputStream);
     }
 
+
     @Override
-    public void run(Path workDir, String appName, String target) throws Exception {
-        System.err.println("LINUX RUN");
+    public void run(Path appPath, String appName, String notarget) throws IOException, InterruptedException {
+        ProcessBuilder runBuilder = new ProcessBuilder(appPath.toString() + "/" + appName);
+        runBuilder.redirectErrorStream(true);
+        Process runProcess = runBuilder.start();
+        InputStream is = runProcess.getInputStream();
+        asynPrintFromInputStream(is);
+        runProcess.waitFor();
     }
 
+    private void asynPrintFromInputStream (InputStream inputStream) throws IOException {
+        Thread t = new Thread() {
+            @Override public void run() {
+                try {
+                    printFromInputStream(inputStream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
+    }
     private void printFromInputStream(InputStream inputStream) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         String l = br.readLine();
