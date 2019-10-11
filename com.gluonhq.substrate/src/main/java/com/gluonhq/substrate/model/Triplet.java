@@ -81,6 +81,10 @@ public class Triplet {
         return this.arch+"-"+this.os;
     }
 
+    public String getOsArch() {
+        return this.os+"-"+this.arch;
+    }
+
     @Override
     public String toString() {
         return arch + '-' + vendor + '-' + os;

@@ -62,6 +62,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         ProcessBuilder compileBuilder = new ProcessBuilder(nativeImage);
         compileBuilder.command().add("-H:+ExitAfterRelocatableImageWrite");
         compileBuilder.command().add("-H:TempDirectory="+tmpDir);
+        compileBuilder.command().add("-H:+SharedLibrary");
         compileBuilder.command().add("-Dsvm.platform=org.graalvm.nativeimage.Platform$LINUX_AMD64");
         compileBuilder.command().add("-cp");
         compileBuilder.command().add(cp);
@@ -139,6 +140,17 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         linkBuilder.command().add(linux.toString() + "/launcher.o");
         linkBuilder.command().add(linux.toString() + "/thread.o");
         linkBuilder.command().add(objectFile.toString());
+        linkBuilder.command().add("-L" + projectConfiguration.getJavaStaticLibsPath());
+        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/linux-amd64");
+        linkBuilder.command().add("-ljava");
+        linkBuilder.command().add("-ljvm");
+        linkBuilder.command().add("-llibchelper");
+        linkBuilder.command().add("-lnio");
+        linkBuilder.command().add("-lzip");
+        linkBuilder.command().add("-lnet");
+        linkBuilder.command().add("-lpthread");
+        linkBuilder.command().add("-lz");
+        linkBuilder.command().add("-ldl");
         linkBuilder.redirectErrorStream(true);
         Process compileProcess = linkBuilder.start();
         InputStream inputStream = compileProcess.getInputStream();

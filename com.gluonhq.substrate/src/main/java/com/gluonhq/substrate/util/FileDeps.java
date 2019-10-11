@@ -47,7 +47,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -69,35 +68,40 @@ public class FileDeps {
     );
 
     public static void setupDependencies(ProjectConfiguration configuration) throws IOException {
-        String target = configuration.getTargetTriplet().getOs();
+        String target = configuration.getTargetTriplet().getOsArch();
 
         if (! Files.isDirectory(Constants.USER_SUBSTRATE_PATH)) {
             Files.createDirectories(Constants.USER_SUBSTRATE_PATH);
         }
 
+        Path javaStaticLibs = configuration.getJavaStaticLibsPath();
+        Path javaStaticSdk = configuration.getJavaStaticPath();
+
         boolean downloadGraalLibs = false, downloadJavaStatic = false, downloadJavaFXStatic = false;
 
 
         // Java Static
-
-        Path javaStatic = Path.of(configuration.getStaticRoot());
-        Logger.logDebug("Processing JavaStatic dependencies at " + javaStatic.toString());
+        System.err.println("Processing JavaStatic dependencies at " + javaStaticLibs.toString());
+        Logger.logDebug("Processing JavaStatic dependencies at " + javaStaticLibs.toString());
 
         if (configuration.isUseJNI()) {
-            if (! Files.isDirectory(javaStatic)) {
+            if (! Files.isDirectory(javaStaticLibs)) {
+                System.err.println("Not a dir");
                 downloadJavaStatic = true;
             } else {
-                String path = javaStatic.toString();
+                String path = javaStaticLibs.toString();
                 if (JAVA_FILES.stream()
                         .map(s -> new File(path, s))
                         .anyMatch(f -> !f.exists())) {
                     Logger.logDebug("jar file not found");
+                    System.err.println("jar not found");
                     downloadJavaStatic = true;
                 } else if (configuration.isEnableCheckHash()) {
                     Logger.logDebug("Checking java static sdk hashes");
-                    Map<String, String> hashes = getHashMap(javaStatic.getParent().toString() + File.separator + "javaStaticSdk-" + target + ".md5");
+                    String md5File = getChecksumFile(javaStaticSdk, "javaStaticSdk", target);
+                    Map<String, String> hashes = getHashMap(md5File);
                     if (hashes == null) {
-                        Logger.logDebug("javaStaticSdk/" + configuration.getJavaStaticSdkVersion() + "/javaStaticSdk-" + target + ".md5 not found");
+                        Logger.logDebug(md5File+" not found");
                         downloadJavaStatic = true;
                     } else if (JAVA_FILES.stream()
                             .map(s -> new File(path, s))
@@ -126,9 +130,10 @@ public class FileDeps {
                     downloadJavaFXStatic = true;
                 } else if (configuration.isEnableCheckHash()) {
                     Logger.logDebug("Checking javafx static sdk hashes");
-                    Map<String, String> hashes = getHashMap(javafxStatic.getParent().getParent().toString() + File.separator + "javafxStaticSdk-" + target + ".md5");
+                    String md5File = getChecksumFile(javafxStatic, "javafxStaticSdk", target);
+                    Map<String, String> hashes = getHashMap(md5File);
                     if (hashes == null) {
-                        Logger.logDebug("javafxStaticSdk/" + configuration.getJavafxStaticSdkVersion() + "/javafxStaticSdk-" + target + ".md5 not found");
+                        Logger.logDebug(md5File + " md5 not found");
                         downloadJavaFXStatic = true;
                     } else if (JAVAFX_FILES.stream()
                             .map(s -> new File(path, s))
@@ -167,33 +172,40 @@ public class FileDeps {
         return hashes;
     }
 
+    private static String getChecksumFile(Path unpacked, String name, String osArch) {
+        String answer = unpacked.getParent().toString()+ File.separator + name+"-" + osArch + ".md5";
+        return answer;
+    }
 
     private static void downloadJavaZip(String target, Path omegaPath, ProjectConfiguration configuration) throws IOException {
-        Logger.logDebug("Process zip javaStaticSdk");
+        Logger.logDebug("Process zip javaStaticSdk, target = "+target);
         processZip(URL_JAVA_STATIC_SDK
                         .replace("${version}", configuration.getJavaStaticSdkVersion())
                         .replace("${target}", target),
                 omegaPath.resolve("${target}-libs-${version}.zip"
                         .replace("${version}", configuration.getJavaStaticSdkVersion())
                         .replace("${target}", target)),
-                "javaStaticSdk", configuration.getJavaStaticSdkVersion(), "javaStaticSdk-" + target + ".md5");
+                "javaStaticSdk", configuration.getJavaStaticSdkVersion(), configuration);
         Logger.logDebug("Processing zip java done");
     }
 
-    private static void downloadJavaFXZip(String target, Path omegaPath, ProjectConfiguration configuration) throws IOException {
+    private static void downloadJavaFXZip(String osarch, Path omegaPath, ProjectConfiguration configuration) throws IOException {
         Logger.logDebug("Process zip javafxStaticSdk");
         processZip(URL_JAVAFX_STATIC_SDK
                         .replace("${version}", configuration.getJavafxStaticSdkVersion())
-                        .replace("${target}", target),
+                        .replace("${target}", osarch),
                 omegaPath.resolve("${target}-libsfx-${version}.zip"
                         .replace("${version}", configuration.getJavafxStaticSdkVersion())
-                        .replace("${target}", target)),
-                "javafxStaticSdk", configuration.getJavafxStaticSdkVersion(), "javafxStaticSdk-" + target + ".md5");
+                        .replace("${target}", osarch)),
+                "javafxStaticSdk", configuration.getJavafxStaticSdkVersion(), configuration);
 
         Logger.logDebug("Process zip javafx done");
     }
 
-    private static void processZip(String urlZip, Path zipPath, String folder, String version, String name) throws IOException {
+    private static void processZip(String urlZip, Path zipPath, String folder, String version, ProjectConfiguration configuration) throws IOException {
+        String osArch = configuration.getTargetTriplet().getOsArch();
+        String name = folder+"-"+osArch+".md5";
+        System.err.println("PROCESSZIP, url = "+urlZip+", zp = "+zipPath+", folder = "+folder+", version = "+version+", name = "+name);
         URL url = new URL(urlZip);
         url.openConnection();
         try (InputStream reader = url.openStream();
@@ -205,7 +217,8 @@ public class FileDeps {
                 buffer = new byte[8192];
             }
         }
-        Path zipDir = zipPath.getParent().resolve(folder).resolve(version);
+        // Path zipDir = zipPath.getParent().resolve(folder).resolve(version).resolve(target);
+        Path zipDir = configuration.getJavaStaticPath().getParent();
         if (! zipPath.toFile().isDirectory()) {
             Files.createDirectories(zipDir);
         }

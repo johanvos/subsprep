@@ -27,6 +27,9 @@
  */
 package com.gluonhq.substrate.model;
 
+import com.gluonhq.substrate.Constants;
+
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -93,6 +96,24 @@ public class ProjectConfiguration {
      */
     public void setJavaStaticSdkVersion(String javaStaticSdkVersion) {
         this.javaStaticSdkVersion = javaStaticSdkVersion;
+    }
+
+    /**
+     * Return the path where the static JDK is installed for the os-arch combination of this configuration, and for
+     * the version in <code>javaStaticSdkVersion</code>
+     * @return the path to the Java SDK (including at least the libs)
+     */
+    public Path getJavaStaticPath() {
+        Path answer = Constants.USER_SUBSTRATE_PATH
+                .resolve("javaStaticSdk")
+                .resolve(getJavaStaticSdkVersion())
+                .resolve(targetTriplet.getOsArch())
+                .resolve("labs-staticjdk");
+        return answer;
+    }
+
+    public Path getJavaStaticLibsPath() {
+        return getJavaStaticPath().resolve("lib").resolve("static");
     }
 
     public String getJavafxStaticSdkVersion() {
