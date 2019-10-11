@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 public class SubstrateDispatcher {
 
@@ -70,12 +71,21 @@ public class SubstrateDispatcher {
         if (appName == null) {
             appName = "anonymousApp";
         }
+        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        Triplet targetTriplet;
+        if (osName.contains("mac")) {
+            targetTriplet  = new Triplet(Constants.Profile.MACOS);
+        } else if (osName.contains("nux")) {
+            targetTriplet = new Triplet(Constants.Profile.LINUX);
+        } else {
+            throw new RuntimeException("OS " + osName + " not supported");
+        }
+
         ProjectConfiguration config = new ProjectConfiguration();
         config.setGraalPath(graalVM);
         config.setMainClassName(mainClass);
         config.setAppName(appName);
         config.setJavaStaticSdkVersion(Constants.DEFAULT_JAVA_STATIC_SDK_VERSION);
-        Triplet targetTriplet = new Triplet(Constants.Profile.LINUX);
         config.setTarget(targetTriplet);
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         Path buildRoot = Paths.get(System.getProperty("user.dir"), "build", "autoclient");

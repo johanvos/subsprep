@@ -57,10 +57,9 @@ public class Constants {
      * Predefined Profiles
      */
     public enum Profile {
-        LINUX; // (x86_64-linux-linux)
+        LINUX, // (x86_64-linux-linux)
+        MACOS; // (x86_64-apple-darwin)
     };
-
-    public static final String PROFILE_LINUX = "linux";
 
     /**
      * Supported hosts

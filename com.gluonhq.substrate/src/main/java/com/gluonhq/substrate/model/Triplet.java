@@ -44,12 +44,19 @@ public class Triplet {
     }
 
     public Triplet(Constants.Profile profile) {
-        if (profile == Constants.Profile.LINUX) {
-            this.arch = ARCH_AMD64;
-            this.vendor = VENDOR_LINUX;
-            this.os = OS_LINUX;
-        } else {
-            throw new IllegalArgumentException("Triplet for profile "+profile+" is not supported yet");
+        switch (profile) {
+            case LINUX:
+                this.arch = ARCH_AMD64;
+                this.vendor = VENDOR_LINUX;
+                this.os = OS_LINUX;
+                break;
+            case MACOS:
+                this.arch = ARCH_AMD64;
+                this.vendor = VENDOR_APPLE;
+                this.os = OS_DARWIN;
+                break;
+            default:
+                throw new IllegalArgumentException("Triplet for profile "+profile+" is not supported yet");
         }
     }
 
