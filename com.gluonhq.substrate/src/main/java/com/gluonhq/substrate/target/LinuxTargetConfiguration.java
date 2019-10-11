@@ -32,14 +32,11 @@ import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.util.FileOps;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 
 public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
@@ -97,7 +94,6 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
     public boolean compileAdditionalSources(ProcessPaths paths, ProjectConfiguration projectConfiguration)
             throws IOException, InterruptedException {
         String appName = projectConfiguration.getAppName();
-        System.err.println("paths = "+paths+" and gvmp = "+paths.getGvmPath()+" and name = "+appName);
         Path workDir = paths.getGvmPath().resolve(appName);
         Files.createDirectories(workDir);
         FileOps.copyResource("/native/linux/launcher.c", workDir.resolve("launcher.c"));
@@ -124,7 +120,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
     }
 
     @Override
-    public void link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+    public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
         String appName = projectConfiguration.getAppName();
         String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
         Path gvmPath = paths.getGvmPath();
@@ -156,20 +152,37 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         Process compileProcess = linkBuilder.start();
         InputStream inputStream = compileProcess.getInputStream();
         int result = compileProcess.waitFor();
-        System.err.println("RESULT OF LINKING = "+result);
-        System.err.println("INPUTPROCESSING:");
-        printFromInputStream(inputStream);
+        if (result != 0 ) {
+            printFromInputStream(inputStream);
+            return false;
+        }
+        return true;
     }
 
 
     @Override
-    public void run(Path appPath, String appName) throws IOException, InterruptedException {
+    public InputStream run(Path appPath, String appName) throws IOException, InterruptedException {
+        ProcessBuilder runBuilder = new ProcessBuilder(appPath.toString() + "/" + appName);
+        runBuilder.redirectErrorStream(true);
+        Process runProcess = runBuilder.start();
+        InputStream is = runProcess.getInputStream();
+        return is;
+    }
+
+
+    @Override
+    public boolean runUntilEnd(Path appPath, String appName) throws IOException, InterruptedException {
         ProcessBuilder runBuilder = new ProcessBuilder(appPath.toString() + "/" + appName);
         runBuilder.redirectErrorStream(true);
         Process runProcess = runBuilder.start();
         InputStream is = runProcess.getInputStream();
         asynPrintFromInputStream(is);
-        runProcess.waitFor();
+        int result = runProcess.waitFor();
+        if (result != 0 ) {
+            printFromInputStream(is);
+            return false;
+        }
+        return true;
     }
 
     private void asynPrintFromInputStream (InputStream inputStream) throws IOException {

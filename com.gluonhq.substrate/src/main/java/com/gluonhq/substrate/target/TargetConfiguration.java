@@ -31,6 +31,7 @@ import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 public interface TargetConfiguration {
@@ -45,7 +46,9 @@ public interface TargetConfiguration {
      */
     boolean compile(ProcessPaths paths, ProjectConfiguration config, String classPath) throws Exception;
 
-    void link(ProcessPaths paths, ProjectConfiguration config) throws IOException, InterruptedException;
+    boolean link(ProcessPaths paths, ProjectConfiguration config) throws IOException, InterruptedException;
 
-    void run(Path workDir, String appName) throws IOException, InterruptedException;
+    boolean runUntilEnd(Path workDir, String appName) throws IOException, InterruptedException;
+
+    InputStream run(Path workDir, String appName) throws IOException, InterruptedException;
 }

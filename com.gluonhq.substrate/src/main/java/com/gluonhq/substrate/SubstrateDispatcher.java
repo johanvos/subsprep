@@ -35,7 +35,10 @@ import com.gluonhq.substrate.target.TargetConfiguration;
 import com.gluonhq.substrate.util.FileDeps;
 import com.gluonhq.substrate.util.Logger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,6 +53,7 @@ public class SubstrateDispatcher {
         String graalVM = System.getProperty("graalvm");
         String mainClass = System.getProperty("mainclass");
         String appName = System.getProperty("appname");
+        String expected = System.getProperty("expected");
         if (classPath == null || classPath.isEmpty()) {
             printUsage();
             throw new IllegalArgumentException("No classpath specified. Use -Dimagecp=/path/to/classes");
@@ -82,8 +86,13 @@ public class SubstrateDispatcher {
             return;
         }
         targetConfiguration.link(paths, config);
-        targetConfiguration.run(paths.getAppPath(), appName);
-        System.err.println("Result of compile = "+compile);
+        if (expected != null) {
+            InputStream is = targetConfiguration.run(paths.getAppPath(), appName);
+            // TODO: compare expected and actual output
+
+        } else {
+            targetConfiguration.runUntilEnd(paths.getAppPath(), appName);
+        }
     }
 
     static void printUsage() {
@@ -122,7 +131,7 @@ public class SubstrateDispatcher {
         Triplet targetTriplet  = config.getTargetTriplet();
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         ProcessPaths paths = new ProcessPaths(buildRoot, targetTriplet.getArchOs());
-        targetConfiguration.run(paths.getAppPath(), config.getAppName());
+        targetConfiguration.runUntilEnd(paths.getAppPath(), config.getAppName());
     }
 
     private static TargetConfiguration getTargetConfiguration(Triplet targetTriplet) {
