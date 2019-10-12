@@ -5,6 +5,7 @@ sh ./gradlew build
 
 if [ "$1" = "linux" ]
 then
+  gcc --version
   wget https://download2.gluonhq.com/substrate/graalvm/graalvm-unknown-java11-19.3.0-dev-gvm-1-linux-x86_64.zip
   unzip graalvm-unknown-java11-19.3.0-dev-gvm-1-linux-x86_64.zip
   export graalvmPath="graalvm-unknown-java11-19.3.0-dev"
