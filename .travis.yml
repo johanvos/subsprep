@@ -21,6 +21,8 @@ matrix:
   include:
     - os: linux
       dist: bionic
+      services:
+        - xvfb
       addons:
         apt:
           packages:
@@ -35,7 +37,7 @@ before_script:
   - echo $JAVA_OPTS
   - sh ./gradlew --version
   # run on xvfb screen (for linux).
-  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then export DISPLAY=:99.0 && sh -e /etc/init.d/xvfb start; fi
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then export DISPLAY=:99.0 && sleep 3; fi
 
 install: true
 
