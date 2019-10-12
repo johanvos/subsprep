@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 echo "hello, ci script"
 echo "which java: $(which java)"
+sh ./gradlew build
 wget https://download2.gluonhq.com/substrate/graalvm/graalvm-unknown-java11-19.3.0-dev-gvm-1-linux-x86_64.zip
 unzip graalvm-unknown-java11-19.3.0-dev-gvm-1-linux-x86_64.zip
 echo "public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hello World\"); } }" > HelloWorld.java
