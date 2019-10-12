@@ -92,6 +92,19 @@ public class Triplet {
         return this.os+"-"+this.arch;
     }
 
+    /**
+     * returns os-arch but use amd64 instead of x86_64.
+     * This should become the default
+     * @return
+     */
+    public String getOsArch2() {
+        String myarch = this.arch;
+        if (myarch.equals("x86_64")) {
+            myarch = "amd64";
+        }
+        return this.os+"-"+myarch;
+    }
+
     @Override
     public String toString() {
         return arch + '-' + vendor + '-' + os;

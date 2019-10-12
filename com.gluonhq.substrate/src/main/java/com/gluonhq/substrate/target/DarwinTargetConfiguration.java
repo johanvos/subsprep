@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DarwinTargetConfiguration extends AbstractTargetConfiguration {
 
@@ -68,53 +70,60 @@ public class DarwinTargetConfiguration extends AbstractTargetConfiguration {
         } // we need more checks (e.g. do launcher.o and thread.o exist?)
         return true;
     }
+//
+//    @Override
+//    public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+//        File javaStaticLibsDir = projectConfiguration.getJavaStaticLibsPath().toFile();
+//        if (!javaStaticLibsDir.exists()) {
+//            System.err.println("We can't link because the static Java libraries are missing. " +
+//                    "The path "+javaStaticLibsDir+" does not exist.");
+//            return false;
+//        }
+//        String appName = projectConfiguration.getAppName();
+//        String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
+//        Path gvmPath = paths.getGvmPath();
+//        Path objectFile = FileOps.findFile(gvmPath, objectFilename);
+//        if (objectFile == null) {
+//            throw new IllegalArgumentException("Linking failed, since there is no objectfile named "+objectFilename+" under "
+//                    +gvmPath.toString());
+//        }
+//        ProcessBuilder linkBuilder = new ProcessBuilder("gcc");
+//        Path linux = gvmPath.resolve(appName);
+//
+//        linkBuilder.command().add("-o");
+//        linkBuilder.command().add(paths.getAppPath().toString() + "/" + appName);
+//        linkBuilder.command().add(linux.toString() + "/launcher.o");
+//        linkBuilder.command().add(linux.toString() + "/thread.o");
+//        linkBuilder.command().add(objectFile.toString());
+//        linkBuilder.command().add("-L" + projectConfiguration.getJavaStaticLibsPath());
+//        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/darwin-amd64");
+//        linkBuilder.command().add("-ljava");
+//        linkBuilder.command().add("-ljvm");
+//        linkBuilder.command().add("-llibchelper");
+//        linkBuilder.command().add("-lnio");
+//        linkBuilder.command().add("-lzip");
+//        linkBuilder.command().add("-lnet");
+//        linkBuilder.command().add("-lpthread");
+//        linkBuilder.command().add("-lz");
+//        linkBuilder.command().add("-ldl");
+//        linkBuilder.command().add("-Wl,-framework,Foundation");
+//        linkBuilder.redirectErrorStream(true);
+//        Process compileProcess = linkBuilder.start();
+//        InputStream inputStream = compileProcess.getInputStream();
+//        int result = compileProcess.waitFor();
+//        if (result != 0 ) {
+//            System.err.println("Linking failed. Details from linking below:");
+//            printFromInputStream(inputStream);
+//            return false;
+//        }
+//        return true;
+//    }
 
     @Override
-    public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
-        File javaStaticLibsDir = projectConfiguration.getJavaStaticLibsPath().toFile();
-        if (!javaStaticLibsDir.exists()) {
-            System.err.println("We can't link because the static Java libraries are missing. " +
-                    "The path "+javaStaticLibsDir+" does not exist.");
-            return false;
-        }
-        String appName = projectConfiguration.getAppName();
-        String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
-        Path gvmPath = paths.getGvmPath();
-        Path objectFile = FileOps.findFile(gvmPath, objectFilename);
-        if (objectFile == null) {
-            throw new IllegalArgumentException("Linking failed, since there is no objectfile named "+objectFilename+" under "
-                    +gvmPath.toString());
-        }
-        ProcessBuilder linkBuilder = new ProcessBuilder("gcc");
-        Path linux = gvmPath.resolve(appName);
-
-        linkBuilder.command().add("-o");
-        linkBuilder.command().add(paths.getAppPath().toString() + "/" + appName);
-        linkBuilder.command().add(linux.toString() + "/launcher.o");
-        linkBuilder.command().add(linux.toString() + "/thread.o");
-        linkBuilder.command().add(objectFile.toString());
-        linkBuilder.command().add("-L" + projectConfiguration.getJavaStaticLibsPath());
-        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/darwin-amd64");
-        linkBuilder.command().add("-ljava");
-        linkBuilder.command().add("-ljvm");
-        linkBuilder.command().add("-llibchelper");
-        linkBuilder.command().add("-lnio");
-        linkBuilder.command().add("-lzip");
-        linkBuilder.command().add("-lnet");
-        linkBuilder.command().add("-lpthread");
-        linkBuilder.command().add("-lz");
-        linkBuilder.command().add("-ldl");
-        linkBuilder.command().add("-Wl,-framework,Foundation");
-        linkBuilder.redirectErrorStream(true);
-        Process compileProcess = linkBuilder.start();
-        InputStream inputStream = compileProcess.getInputStream();
-        int result = compileProcess.waitFor();
-        if (result != 0 ) {
-            System.err.println("Linking failed. Details from linking below:");
-            printFromInputStream(inputStream);
-            return false;
-        }
-        return true;
+    List<String> getTargetSpecificLinkFlags() {
+        LinkedList<String> answer = new LinkedList<>();
+        answer.add("-Wl,-framework,Foundation");
+        return answer;
     }
 
 

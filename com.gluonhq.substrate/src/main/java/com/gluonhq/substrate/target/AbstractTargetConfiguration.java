@@ -34,10 +34,12 @@ import com.gluonhq.substrate.model.Triplet;
 import com.gluonhq.substrate.util.FileOps;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.List;
 
 public abstract class AbstractTargetConfiguration implements TargetConfiguration {
 
@@ -106,6 +108,57 @@ public abstract class AbstractTargetConfiguration implements TargetConfiguration
     public abstract boolean compileAdditionalSources(ProcessPaths paths, ProjectConfiguration projectConfiguration)
             throws IOException, InterruptedException;
 
+
+    @Override
+    public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+        File javaStaticLibsDir = projectConfiguration.getJavaStaticLibsPath().toFile();
+        if (!javaStaticLibsDir.exists()) {
+            System.err.println("We can't link because the static Java libraries are missing. " +
+                    "The path "+javaStaticLibsDir+" does not exist.");
+            return false;
+        }
+        String appName = projectConfiguration.getAppName();
+        String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
+        Triplet target = projectConfiguration.getTargetTriplet();
+        Path gvmPath = paths.getGvmPath();
+        Path objectFile = FileOps.findFile(gvmPath, objectFilename);
+        if (objectFile == null) {
+            throw new IllegalArgumentException("Linking failed, since there is no objectfile named "+objectFilename+" under "
+                    +gvmPath.toString());
+        }
+        ProcessBuilder linkBuilder = new ProcessBuilder("gcc");
+        Path linux = gvmPath.resolve(appName);
+
+        linkBuilder.command().add("-o");
+        linkBuilder.command().add(paths.getAppPath().toString() + "/" + appName);
+        linkBuilder.command().add(linux.toString() + "/launcher.o");
+        linkBuilder.command().add(linux.toString() + "/thread.o");
+        linkBuilder.command().add(objectFile.toString());
+        linkBuilder.command().add("-L" + projectConfiguration.getJavaStaticLibsPath());
+        linkBuilder.command().add("-L"+projectConfiguration.getGraalPath()+"/lib/svm/clibraries/"+target.getOsArch2());// darwin-amd64");
+        linkBuilder.command().add("-ljava");
+        linkBuilder.command().add("-ljvm");
+        linkBuilder.command().add("-llibchelper");
+        linkBuilder.command().add("-lnio");
+        linkBuilder.command().add("-lzip");
+        linkBuilder.command().add("-lnet");
+        linkBuilder.command().add("-lpthread");
+        linkBuilder.command().add("-lz");
+        linkBuilder.command().add("-ldl");
+        linkBuilder.command().addAll(getTargetSpecificLinkFlags());
+        linkBuilder.redirectErrorStream(true);
+        Process compileProcess = linkBuilder.start();
+        InputStream inputStream = compileProcess.getInputStream();
+        int result = compileProcess.waitFor();
+        if (result != 0 ) {
+            System.err.println("Linking failed. Details from linking below:");
+            printFromInputStream(inputStream);
+            return false;
+        }
+        return true;
+    }
+
+    abstract List<String> getTargetSpecificLinkFlags();
 
     void asynPrintFromInputStream (InputStream inputStream) throws IOException {
         Thread t = new Thread() {
