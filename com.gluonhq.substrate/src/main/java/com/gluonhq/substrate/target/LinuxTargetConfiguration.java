@@ -31,9 +31,11 @@ import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.util.FileOps;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -69,6 +71,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
     @Override
     public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+        checkLinker();
         File javaStaticLibsDir = projectConfiguration.getJavaStaticLibsPath().toFile();
         if (!javaStaticLibsDir.exists()) {
             System.err.println("We can't link because the static Java libraries are missing. " +
@@ -140,5 +143,36 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         return true;
     }
 
+    boolean checkLinker() throws IOException, InterruptedException {
+        ProcessBuilder linker = new ProcessBuilder("gcc");
+        linker.command().add("--version");
+        linker.redirectErrorStream(true);
+        Process start = linker.start();
+        InputStream is = start.getInputStream();
+        start.waitFor();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String l = br.readLine();
+        int ar = l.lastIndexOf(")");
+        if ((ar < 0) || (ar > l.length() - 2)) {
+            // can't parse... let's try but warn
+            System.err.println("WARNING: your gcc compiler has version " + l + " which might not work");
+            return true;
+        }
+        String versionString = l.substring(ar + 1).trim();
+        String v = versionString.substring(0, 1);
+        try {
+            int version = Integer.parseInt(v);
+            if (version < 6) {
+                System.err.println("Wrong GCC version: " + l + ". We need at least gcc 6. // todo where to get it?");
+                throw new IllegalArgumentException("gcc version outdated");
+            } else {
+                return true;
+            }
+        } catch (NumberFormatException e ) {
+            System.err.println("WARNING: your gcc compiler has version " + l + " which we could not parse so it might not work");
+        }
+        return true;
+
+    }
 
 }
