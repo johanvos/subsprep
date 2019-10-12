@@ -365,4 +365,32 @@ public class ProjectConfiguration {
     public void setMainClassName(String mainClassName) {
         this.mainClassName = mainClassName;
     }
+
+    @Override
+    public String toString() {
+        return "ProjectConfiguration{" +
+                "graalPath='" + graalPath + '\'' +
+                ", javaStaticSdkVersion='" + javaStaticSdkVersion + '\'' +
+                ", javafxStaticSdkVersion='" + javafxStaticSdkVersion + '\'' +
+                ", llcPath='" + llcPath + '\'' +
+                ", JavaFXRoot='" + JavaFXRoot + '\'' +
+                ", StaticRoot='" + StaticRoot + '\'' +
+                ", useJNI=" + useJNI +
+                ", useJavaFX=" + useJavaFX +
+                ", enableCheckHash=" + enableCheckHash +
+                ", verbose=" + verbose +
+                ", targetTriplet=" + targetTriplet +
+                ", hostTriplet=" + hostTriplet +
+                ", backend='" + backend + '\'' +
+                ", bundlesList=" + bundlesList +
+                ", resourcesList=" + resourcesList +
+                ", reflectionList=" + reflectionList +
+                ", jniList=" + jniList +
+                ", delayInitList=" + delayInitList +
+                ", runtimeArgsList=" + runtimeArgsList +
+                ", releaseSymbolsList=" + releaseSymbolsList +
+                ", appName='" + appName + '\'' +
+                ", mainClassName='" + mainClassName + '\'' +
+                '}';
+    }
 }

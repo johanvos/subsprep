@@ -90,13 +90,16 @@ public class SubstrateDispatcher {
         TargetConfiguration targetConfiguration = getTargetConfiguration(targetTriplet);
         Path buildRoot = Paths.get(System.getProperty("user.dir"), "build", "autoclient");
         ProcessPaths paths = new ProcessPaths(buildRoot.toString(), targetTriplet.getArchOs());
-
+        System.err.println("Config: " + config);
+        System.err.println("Compiling...");
         boolean compile = targetConfiguration.compile(paths, config, classPath);
         if (!compile) {
             System.err.println("COMPILE FAILED");
             return;
         }
+        System.err.println("Linking...");
         targetConfiguration.link(paths, config);
+        System.err.println("Running...");
         if (expected != null) {
             InputStream is = targetConfiguration.run(paths.getAppPath(), appName);
             // TODO: compare expected and actual output
