@@ -47,7 +47,7 @@ public class ProjectConfiguration {
     private String JavaFXRoot;
     private String StaticRoot;
     private boolean useJNI = true;
-    private boolean useJavaFX = true;
+    private boolean useJavaFX = false
     private boolean enableCheckHash = true;
     private boolean verbose = false;
 
