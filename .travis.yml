@@ -20,15 +20,11 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      dist: trusty
+      dist: bionic
       addons:
         apt:
-          sources
-            - ubuntu-toolchain-r-test
           packages:
             - *global_deps
-            - gcc-7
-            - g++-7
       env: TEST_ENV=linux
     - os: osx
       osx_image: xcode9
@@ -39,7 +35,7 @@ before_script:
   - echo $JAVA_OPTS
   - sh ./gradlew --version
   # run on xvfb screen (for linux).
-  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then export DISPLAY=:99.0 && export CC=gcc-7 && export CXX=g++-7 && sh -e /etc/init.d/xvfb start; fi
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then export DISPLAY=:99.0 && sh -e /etc/init.d/xvfb start; fi
 
 install: true
 
