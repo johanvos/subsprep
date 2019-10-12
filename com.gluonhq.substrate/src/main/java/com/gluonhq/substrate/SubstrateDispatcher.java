@@ -97,11 +97,12 @@ public class SubstrateDispatcher {
             System.err.println("COMPILE FAILED");
             return;
         }
+      //  FileDeps.setupDependencies(config);
         System.err.println("Linking...");
         boolean linked = targetConfiguration.link(paths, config);
         if (!linked) {
             System.err.println("Linking failed");
-            return;
+            System.exit(1);
         }
         System.err.println("Running...");
         if (expected != null) {
