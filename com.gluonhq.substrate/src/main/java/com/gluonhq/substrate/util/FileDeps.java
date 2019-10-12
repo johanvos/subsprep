@@ -67,7 +67,7 @@ public class FileDeps {
             "libglass.a"
     );
 
-    public static void setupDependencies(ProjectConfiguration configuration) throws IOException {
+    public static boolean setupDependencies(ProjectConfiguration configuration) throws IOException {
         String target = configuration.getTargetTriplet().getOsArch();
 
         if (! Files.isDirectory(Constants.USER_SUBSTRATE_PATH)) {
@@ -161,6 +161,7 @@ public class FileDeps {
             throw new RuntimeException("Error downloading zips: " + e.getMessage());
         }
         Logger.logDebug("Setup dependencies done");
+        return true;
     }
 
     private static Map<String, String> getHashMap(String nameFile) {

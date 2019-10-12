@@ -31,6 +31,7 @@ import com.gluonhq.substrate.model.ProcessPaths;
 import com.gluonhq.substrate.model.ProjectConfiguration;
 import com.gluonhq.substrate.util.FileOps;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -68,6 +69,12 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
 
     @Override
     public boolean link(ProcessPaths paths, ProjectConfiguration projectConfiguration) throws IOException, InterruptedException {
+        File javaStaticLibsDir = projectConfiguration.getJavaStaticLibsPath().toFile();
+        if (!javaStaticLibsDir.exists()) {
+            System.err.println("We can't link because the static Java libraries are missing. " +
+                    "The path "+javaStaticLibsDir+" does not exist.");
+            return false;
+        }
         String appName = projectConfiguration.getAppName();
         String objectFilename = projectConfiguration.getMainClassName().toLowerCase()+".o";
         Path gvmPath = paths.getGvmPath();
@@ -100,6 +107,7 @@ public class LinuxTargetConfiguration extends AbstractTargetConfiguration {
         InputStream inputStream = compileProcess.getInputStream();
         int result = compileProcess.waitFor();
         if (result != 0 ) {
+            System.err.println("Linking failed. Details from linking below:");
             printFromInputStream(inputStream);
             return false;
         }

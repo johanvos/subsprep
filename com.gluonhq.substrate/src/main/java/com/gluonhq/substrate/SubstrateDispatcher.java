@@ -98,7 +98,11 @@ public class SubstrateDispatcher {
             return;
         }
         System.err.println("Linking...");
-        targetConfiguration.link(paths, config);
+        boolean linked = targetConfiguration.link(paths, config);
+        if (!linked) {
+            System.err.println("Linking failed");
+            return;
+        }
         System.err.println("Running...");
         if (expected != null) {
             InputStream is = targetConfiguration.run(paths.getAppPath(), appName);
