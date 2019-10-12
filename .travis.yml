@@ -25,6 +25,8 @@ matrix:
         apt:
           packages:
             - *global_deps
+            - gcc-7
+            - g++-7
       env: TEST_ENV=linux
     - os: osx
       osx_image: xcode9
